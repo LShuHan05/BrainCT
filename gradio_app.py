@@ -19,8 +19,15 @@ TEMP_DIR = tempfile.gettempdir()
 # ==================== 辅助函数 ====================
 def load_dicom_from_zip(zip_path):
     """
-    从ZIP文件提取DICOM，并按空间位置排序后返回3D体积
+    从ZIP文件中读取DICOM，按SeriesInstanceUID分组，选择切片数最多的序列，
+    并按ImagePositionPatient排序，返回3D体积（D, H, W）。
     """
+    import numpy as np
+    import pydicom
+    import tempfile
+    import zipfile
+    from pathlib import Path
+
     with tempfile.TemporaryDirectory() as tmpdir:
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(tmpdir)
@@ -28,34 +35,59 @@ def load_dicom_from_zip(zip_path):
         if not dcm_files:
             return None
 
-        # 读取所有切片并记录位置信息
-        slices = []
+        # 按 SeriesInstanceUID 分组
+        series_groups = {}
         for dcm_path in dcm_files:
-            ds = pydicom.dcmread(str(dcm_path))
+            try:
+                ds = pydicom.dcmread(str(dcm_path), force=True)
+                uid = getattr(ds, 'SeriesInstanceUID', 'UNKNOWN')
+                if uid not in series_groups:
+                    series_groups[uid] = []
+                series_groups[uid].append((dcm_path, ds))
+            except Exception as e:
+                print(f"⚠️ 读取DICOM失败: {dcm_path}, 错误: {e}")
+                continue
+
+        if not series_groups:
+            return None
+
+        # 选择切片数量最多的序列
+        best_series = max(series_groups.values(), key=lambda x: len(x))
+        print(f"✅ 选择序列: {len(best_series)} 张切片")
+
+        # 提取并排序
+        slices = []
+        for dcm_path, ds in best_series:
             arr = ds.pixel_array.astype(np.float32)
             if hasattr(ds, 'RescaleSlope') and hasattr(ds, 'RescaleIntercept'):
                 arr = arr * ds.RescaleSlope + ds.RescaleIntercept
 
-            # 获取空间位置（优先使用 ImagePositionPatient，否则用 InstanceNumber）
+            # 获取Z轴位置（优先使用 ImagePositionPatient）
             if hasattr(ds, 'ImagePositionPatient'):
-                # ImagePositionPatient 是 (x,y,z) 列表，通常 z 是第三维
-                pos = float(ds.ImagePositionPatient[2])
+                z_pos = float(ds.ImagePositionPatient[2])
             elif hasattr(ds, 'InstanceNumber'):
-                pos = int(ds.InstanceNumber)
+                z_pos = int(ds.InstanceNumber)
             else:
-                pos = dcm_files.index(dcm_path)  # fallback
+                z_pos = 0
+            slices.append((z_pos, arr))
 
-            slices.append((pos, arr))
-
-        # 按位置排序
+        # 按Z轴位置排序
         slices.sort(key=lambda x: x[0])
+        z_positions = [s[0] for s in slices]
+        if len(z_positions) > 1:
+            intervals = np.diff(z_positions)
+            print(f"Z轴间隔（前10个）: {intervals[:10]}")
+            print(f"Z轴间隔标准差: {np.std(intervals):.2f}")
+
         volume = np.stack([s[1] for s in slices], axis=0)  # (D, H, W)
 
-        # 归一化用于显示
+        # 归一化（用于显示）
         volume = np.clip(volume, -100, 100)
         vmin, vmax = volume.min(), volume.max()
         if vmax - vmin > 0:
             volume = (volume - vmin) / (vmax - vmin)
+
+        print(f"✅ 体积形状: {volume.shape}")
         return volume
 
 def extract_center_slices(volume):
