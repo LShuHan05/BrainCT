@@ -1,0 +1,992 @@
+root@dsw-1983642-7bf56b9c74-md9rs:/mnt/workspace# cd BrainCT
+root@dsw-1983642-7bf56b9c74-md9rs:/mnt/workspace/BrainCT# python -c "import torch; print(torch.cuda.is_available())"
+True
+root@dsw-1983642-7bf56b9c74-md9rs:/mnt/workspace/BrainCT# python Main_Lesion.py
+============================================================
+🧠 脑部病灶多标签分类训练
+============================================================
+任务模式: lesion_classification
+设备: cuda
+类别数: 9
+标签: ['ICH', 'IPH', 'IVH', 'SDH', 'EDH', 'SAH', 'Fracture', 'MassEffect', 'MidlineShift']
+============================================================
+
+📊 加载数据集...
+✅ 切片数据集加载完成: 9602 个切片
+  训练集: 7681 样本
+  验证集: 1921 样本
+
+🏗️  构建模型...
+
+🎉 2D 病灶分类模型
+   输入通道: 3
+   类别数: 9
+   三视图模式: True
+
+⚖️  配置损失函数...
+
+🔧 配置优化器...
+/mnt/workspace/BrainCT/Trainer/LesionClassifierTrainer.py:69: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  self.scaler = torch.cuda.amp.GradScaler() if use_amp else None
+
+============================================================
+病灶分类训练器初始化完成
+============================================================
+设备: cuda
+训练轮数: 100
+早停耐心值: 25
+混合精度: True
+============================================================
+
+🚀 开始训练...
+============================================================
+Training:   0%|                                                                                                                                            | 0/641 [00:00<?, ?it/s]/mnt/workspace/BrainCT/Trainer/LesionClassifierTrainer.py:165: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast():
+Training:   5%|██████▎                                                                                                    Training:   5%|██████▎                                                                                                    Training:   6%|██████▋                                                                                                    Training:   6%|██████▋                                                                                                    Training:   6%|██████▋                                                                                                    Training:   6%|██████▉                                                                                                    Training:   6%|██████▉                                                                                                    Training:   6%|██████▉                                                                                                    Training:   6%|██████▉                                                                                                    Training:   6%|██████▉                                                                                                    Training:   7%|███████▋                                                                                                   Training:   7%|███████▋                                                                                                   Training:   7%|███████▋                                                                                                   Training:   7%|███████▋                                                                                                   Training:   7%|███████▋                                                                                                   Training:   7%|████████▍                                                                                                  Training:   7%|████████▍                                                                                                  Training:   7%|████████▍                                                                                                  Training:   7%|████████▍                                                                                                  Training:   7%|████████▍                                                                                                  Training:   8%|█████████▏                                                                                                 Training:   8%|█████████▏                                                                                                 Training:   8%|█████████▏                                                                                                 Training:   8%|█████████▏                                                                                                 Training:   8%|█████████▏                                                                                                 Training:   8%|█████████▉                                                                                                 Training:   8%|█████████▉                                                                                                 Training:   8%|█████████▉                                                                                                 Training:   8%|█████████▉                                                                                                 Training:   8%|█████████▉                                                                                                 Training:   9%|██████████▋                                                                                                Training:   9%|██████████▋                                                                                                Training:   9%|██████████▋                                                                                                Training:   9%|██████████▋                                                                                                Training:   9%|██████████▋                                                                                                Training:  10%|███████████▍                                                                                               Training:  10%|███████████▍                                                                                               Training:  10%|███████████▍                                                                                               Training:  10%|███████████▍                                                                                               Training:  10%|███████████▍                                                                                               Training:  10%|████████████▏                                                                                              Training:  10%|████████████▏                                                                                              Training:  10%|████████████▏                                                                                              Training:  10%|████████████▏                                                                                              Training:  10%|████████████▏                                                                                              Training:  11%|████████████▉                                                                                              Training:  11%|████████████▉                                                                                              Training:  11%|████████████▉                                                                                              Training:  11%|████████████▉                                                                                              Training:  11%|████████████▉                                                                                              Training:  12%|█████████████▌                                                                                             Validation:   0%|                                                                                                                                          | 0/161 [00:00<?, ?it/s]/mnt/workspace/BrainCT/Trainer/LesionClassifierTrainer.py:213: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast() if self.use_amp else torch.no_grad():
+                                                                                                                                                                                   
+Epoch [1/100]
+  Train Loss: 0.3291
+  Val Loss:   0.3698
+  Macro F1:   0.1404
+  Sample F1:  0.3781
+  LR:         0.000200
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.3781
+============================================================
+                                                                                                                                                                                   
+Epoch [2/100]
+  Train Loss: 0.2967
+  Val Loss:   0.3670
+  Macro F1:   0.4469
+  Sample F1:  0.6413
+  LR:         0.000200
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.6413
+============================================================
+                                                                                                                                                                                   
+Epoch [3/100]
+  Train Loss: 0.2648
+  Val Loss:   0.2515
+  Macro F1:   0.7058
+  Sample F1:  0.7757
+  LR:         0.000200
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.7757
+============================================================
+                                                                                                                                                                                   
+Epoch [4/100]
+  Train Loss: 0.2431
+  Val Loss:   0.2337
+  Macro F1:   0.7790
+  Sample F1:  0.8148
+  LR:         0.000199
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.8148
+============================================================
+                                                                                                                                                                                   
+Epoch [5/100]
+  Train Loss: 0.2276
+  Val Loss:   0.2223
+  Macro F1:   0.7826
+  Sample F1:  0.8180
+  LR:         0.000199
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.8180
+============================================================
+                                                                                                                                                                                   
+Epoch [6/100]
+  Train Loss: 0.2170
+  Val Loss:   0.2195
+  Macro F1:   0.7760
+  Sample F1:  0.8363
+  LR:         0.000198
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.8363
+============================================================
+                                                                                                                                                                                   
+Epoch [7/100]
+  Train Loss: 0.2068
+  Val Loss:   0.1981
+  Macro F1:   0.8356
+  Sample F1:  0.8627
+  LR:         0.000198
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.8627
+============================================================
+                                                                                                                                                                                   
+Epoch [8/100]
+  Train Loss: 0.1988
+  Val Loss:   0.1953
+  Macro F1:   0.8415
+  Sample F1:  0.8676
+  LR:         0.000197
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.8676
+============================================================
+                                                                                                                                                                                   
+Epoch [9/100]
+  Train Loss: 0.1917
+  Val Loss:   0.1861
+  Macro F1:   0.8519
+  Sample F1:  0.8798
+  LR:         0.000196
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.8798
+
+  ============================================================
+                                                                                                                                                                                   
+Epoch [10/100]
+  Train Loss: 0.1867
+  Val Loss:   0.1986
+  Macro F1:   0.8435
+  Sample F1:  0.8731
+  LR:         0.000195
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [11/100]
+  Train Loss: 0.1836
+  Val Loss:   0.1733
+  Macro F1:   0.8719
+  Sample F1:  0.8979
+  LR:         0.000194
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.8979
+============================================================
+                                                                                                                                                                                   
+Epoch [12/100]
+  Train Loss: 0.1788
+  Val Loss:   0.1721
+  Macro F1:   0.8737
+  Sample F1:  0.8968
+  LR:         0.000193
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [13/100]
+  Train Loss: 0.1738
+  Val Loss:   0.3751
+  Macro F1:   0.3001
+  Sample F1:  0.5705
+  LR:         0.000192
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [14/100]
+  Train Loss: 0.1700
+  Val Loss:   0.1738
+  Macro F1:   0.8744
+  Sample F1:  0.9010
+  LR:         0.000191
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9010
+============================================================
+                                                                                                                                                                                   
+Epoch [15/100]
+  Train Loss: 0.1682
+  Val Loss:   0.1592
+  Macro F1:   0.8929
+  Sample F1:  0.9156
+  LR:         0.000189
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9156
+============================================================
+                                                                                                                                                                                   
+Epoch [16/100]
+  Train Loss: 0.1658
+  Val Loss:   0.1604
+  Macro F1:   0.8974
+  Sample F1:  0.9171
+  LR:         0.000188
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9171
+============================================================
+                                                                                                                                                                                   
+Epoch [17/100]
+  Train Loss: 0.1638
+  Val Loss:   0.2138
+  Macro F1:   0.8145
+  Sample F1:  0.8449
+  LR:         0.000186
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [18/100]
+  Train Loss: 0.1608
+  Val Loss:   0.1551
+  Macro F1:   0.9056
+  Sample F1:  0.9262
+  LR:         0.000185
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9262
+============================================================
+                                                                                                                                                                                   
+Epoch [19/100]
+  Train Loss: 0.1585
+  Val Loss:   0.1573
+  Macro F1:   0.8996
+  Sample F1:  0.9231
+  LR:         0.000183
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [20/100]
+  Train Loss: 0.1566
+  Val Loss:   0.1501
+  Macro F1:   0.9071
+  Sample F1:  0.9291
+  LR:         0.000181
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9291
+============================================================
+                                                                                                                                                                                   
+Epoch [21/100]
+  Train Loss: 0.1546
+  Val Loss:   0.1542
+  Macro F1:   0.9036
+  Sample F1:  0.9245
+  LR:         0.000179
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [22/100]
+  Train Loss: 0.1548
+  Val Loss:   0.1501
+  Macro F1:   0.9078
+  Sample F1:  0.9300
+  LR:         0.000177
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9300
+============================================================
+                                                                                                                                                                                   
+Epoch [23/100]
+  Train Loss: 0.1525
+  Val Loss:   0.1532
+  Macro F1:   0.9084
+  Sample F1:  0.9264
+  LR:         0.000175
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [24/100]
+  Train Loss: 0.1508
+  Val Loss:   0.1465
+  Macro F1:   0.9135
+  Sample F1:  0.9338
+  LR:         0.000173
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9338
+============================================================
+                                                                                                                                                                                   
+Epoch [25/100]
+  Train Loss: 0.1481
+  Val Loss:   0.1496
+  Macro F1:   0.9099
+  Sample F1:  0.9318
+  LR:         0.000171
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [26/100]
+  Train Loss: 0.1468
+  Val Loss:   0.1492
+  Macro F1:   0.9140
+  Sample F1:  0.9307
+  LR:         0.000169
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [27/100]
+  Train Loss: 0.1455
+  Val Loss:   0.1427
+  Macro F1:   0.9186
+  Sample F1:  0.9404
+  LR:         0.000166
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9404
+============================================================
+                                                                                                                                                                                   
+Epoch [28/100]
+  Train Loss: 0.1443
+  Val Loss:   0.1412
+  Macro F1:   0.9213
+  Sample F1:  0.9415
+  LR:         0.000164
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9415
+============================================================
+                                                                                                                                                                                   
+Epoch [29/100]
+  Train Loss: 0.1418
+  Val Loss:   0.1392
+  Macro F1:   0.9250
+  Sample F1:  0.9435
+  LR:         0.000161
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9435
+============================================================
+                                                                                                                                                                                   
+Epoch [30/100]
+  Train Loss: 0.1416
+  Val Loss:   0.1364
+  Macro F1:   0.9336
+  Sample F1:  0.9499
+  LR:         0.000159
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9499
+============================================================
+                                                                                                                                                                                   
+Epoch [31/100]
+  Train Loss: 0.1410
+  Val Loss:   0.6502
+  Macro F1:   0.4015
+  Sample F1:  0.5193
+  LR:         0.000156
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [32/100]
+  Train Loss: 0.1395
+  Val Loss:   0.1366
+  Macro F1:   0.9296
+  Sample F1:  0.9456
+  LR:         0.000154
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [33/100]
+  Train Loss: 0.1388
+  Val Loss:   0.5492
+  Macro F1:   0.3694
+  Sample F1:  0.5463
+  LR:         0.000151
+  ⏸️  耐心计数: 3/25
+============================================================
+                                                                                                                                                                                   
+Epoch [34/100]
+  Train Loss: 0.1368
+  Val Loss:   0.1328
+  Macro F1:   0.9379
+  Sample F1:  0.9524
+  LR:         0.000148
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9524
+============================================================
+                                                                                                                                                                                   
+Epoch [35/100]
+  Train Loss: 0.1371
+  Val Loss:   0.1352
+  Macro F1:   0.9345
+  Sample F1:  0.9510
+  LR:         0.000146
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [36/100]
+  Train Loss: 0.1365
+  Val Loss:   0.1349
+  Macro F1:   0.9325
+  Sample F1:  0.9500
+  LR:         0.000143
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [37/100]
+  Train Loss: 0.1352
+  Val Loss:   0.1316
+  Macro F1:   0.9358
+  Sample F1:  0.9531
+  LR:         0.000140
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9531
+============================================================
+                                                                                                                                                                                   
+Epoch [38/100]
+  Train Loss: 0.1347
+  Val Loss:   0.1291
+  Macro F1:   0.9402
+  Sample F1:  0.9550
+  LR:         0.000137
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9550
+============================================================
+                                                                                                                                                                                   
+Epoch [39/100]
+  Train Loss: 0.1327
+  Val Loss:   0.1298
+  Macro F1:   0.9365
+  Sample F1:  0.9541
+  LR:         0.000134
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [40/100]
+  Train Loss: 0.1333
+  Val Loss:   0.1316
+  Macro F1:   0.9398
+  Sample F1:  0.9556
+  LR:         0.000131
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9556
+============================================================
+                                                                                                                                                                                   
+Epoch [41/100]
+  Train Loss: 0.1323
+  Val Loss:   0.1306
+  Macro F1:   0.9392
+  Sample F1:  0.9558
+  LR:         0.000128
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9558
+============================================================
+                                                                                                                                                                                   
+Epoch [42/100]
+  Train Loss: 0.1320
+  Val Loss:   0.1283
+  Macro F1:   0.9426
+  Sample F1:  0.9580
+  LR:         0.000125
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9580
+============================================================
+                                                                                                                                                                                   
+Epoch [43/100]
+  Train Loss: 0.1310
+  Val Loss:   0.1269
+  Macro F1:   0.9437
+  Sample F1:  0.9598
+  LR:         0.000122
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9598
+============================================================
+                                                                                                                                                                                   
+Epoch [44/100]
+  Train Loss: 0.1295
+  Val Loss:   0.1268
+  Macro F1:   0.9434
+  Sample F1:  0.9592
+  LR:         0.000119
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [45/100]
+  Train Loss: 0.1300
+  Val Loss:   0.4529
+  Macro F1:   0.4419
+  Sample F1:  0.6053
+  LR:         0.000116
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [46/100]
+  Train Loss: 0.1296
+  Val Loss:   0.1288
+  Macro F1:   0.9431
+  Sample F1:  0.9596
+  LR:         0.000113
+  ⏸️  耐心计数: 3/25
+============================================================
+                                                                                                                                                                                   
+Epoch [47/100]
+  Train Loss: 0.1281
+  Val Loss:   0.1237
+  Macro F1:   0.9441
+  Sample F1:  0.9608
+  LR:         0.000110
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9608
+============================================================
+                                                                                                                                                                                   
+Epoch [48/100]
+  Train Loss: 0.1264
+  Val Loss:   0.1249
+  Macro F1:   0.9453
+  Sample F1:  0.9602
+  LR:         0.000107
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [49/100]
+  Train Loss: 0.1279
+  Val Loss:   0.1241
+  Macro F1:   0.9484
+  Sample F1:  0.9626
+  LR:         0.000104
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9626
+============================================================
+                                                                                                                                                                                   
+Epoch [50/100]
+  Train Loss: 0.1274
+  Val Loss:   0.1248
+  Macro F1:   0.9440
+  Sample F1:  0.9608
+  LR:         0.000100
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [51/100]
+  Train Loss: 0.1265
+  Val Loss:   0.1961
+  Macro F1:   0.8353
+  Sample F1:  0.8745
+  LR:         0.000097
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [52/100]
+  Train Loss: 0.1272
+  Val Loss:   0.1237
+  Macro F1:   0.9498
+  Sample F1:  0.9646
+  LR:         0.000094
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9646
+============================================================
+                                                                                                                                                                                   
+Epoch [53/100]
+  Train Loss: 0.1258
+  Val Loss:   0.1226
+  Macro F1:   0.9477
+  Sample F1:  0.9641
+  LR:         0.000091
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [54/100]
+  Train Loss: 0.1259
+  Val Loss:   0.1212
+  Macro F1:   0.9500
+  Sample F1:  0.9652
+  LR:         0.000088
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9652
+============================================================
+                                                                                                                                                                                   
+Epoch [55/100]
+  Train Loss: 0.1256
+  Val Loss:   0.1227
+  Macro F1:   0.9478
+  Sample F1:  0.9632
+  LR:         0.000085
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [56/100]
+  Train Loss: 0.1243
+  Val Loss:   0.1239
+  Macro F1:   0.9493
+  Sample F1:  0.9639
+  LR:         0.000082
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [57/100]
+  Train Loss: 0.1252
+  Val Loss:   0.1229
+  Macro F1:   0.9487
+  Sample F1:  0.9640
+  LR:         0.000079
+  ⏸️  耐心计数: 3/25
+============================================================
+                                                                                                                                                                                   
+Epoch [58/100]
+  Train Loss: 0.1245
+  Val Loss:   0.1215
+  Macro F1:   0.9494
+  Sample F1:  0.9648
+  LR:         0.000076
+  ⏸️  耐心计数: 4/25
+============================================================
+                                                                                                                                                                                   
+Epoch [59/100]
+  Train Loss: 0.1231
+  Val Loss:   0.1223
+  Macro F1:   0.9493
+  Sample F1:  0.9641
+  LR:         0.000073
+  ⏸️  耐心计数: 5/25
+============================================================
+                                                                                                                                                                                   
+Epoch [60/100]
+  Train Loss: 0.1226
+  Val Loss:   0.1211
+  Macro F1:   0.9520
+  Sample F1:  0.9657
+  LR:         0.000070
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9657
+============================================================
+                                                                                                                                                                                   
+Epoch [61/100]
+  Train Loss: 0.1227
+  Val Loss:   0.1224
+  Macro F1:   0.9477
+  Sample F1:  0.9621
+  LR:         0.000067
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [62/100]
+  Train Loss: 0.1234
+  Val Loss:   0.1222
+  Macro F1:   0.9494
+  Sample F1:  0.9635
+  LR:         0.000064
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [63/100]
+  Train Loss: 0.1226
+  Val Loss:   0.1199
+  Macro F1:   0.9516
+  Sample F1:  0.9665
+  LR:         0.000061
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9665
+============================================================
+                                                                                                                                                                                   
+Epoch [64/100]
+  Train Loss: 0.1220
+  Val Loss:   0.1221
+  Macro F1:   0.9491
+  Sample F1:  0.9642
+  LR:         0.000058
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [65/100]
+  Train Loss: 0.1222
+  Val Loss:   0.1202
+  Macro F1:   0.9503
+  Sample F1:  0.9650
+  LR:         0.000055
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [66/100]
+  Train Loss: 0.1219
+  Val Loss:   0.1208
+  Macro F1:   0.9469
+  Sample F1:  0.9607
+  LR:         0.000053
+  ⏸️  耐心计数: 3/25
+============================================================
+                                                                                                                                                                                   
+Epoch [67/100]
+  Train Loss: 0.1224
+  Val Loss:   0.1195
+  Macro F1:   0.9519
+  Sample F1:  0.9667
+  LR:         0.000050
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9667
+============================================================
+                                                                                                                                                                                   
+Epoch [68/100]
+  Train Loss: 0.1210
+  Val Loss:   0.1198
+  Macro F1:   0.9530
+  Sample F1:  0.9677
+  LR:         0.000047
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9677
+============================================================
+Epoch [69/100]
+  Train Loss: 0.1212
+  Val Loss:   0.1193
+  Macro F1:   0.9516
+  Sample F1:  0.9663
+  LR:         0.000045
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [70/100]
+  Train Loss: 0.1213
+  Val Loss:   0.1210
+  Macro F1:   0.9495
+  Sample F1:  0.9635
+  LR:         0.000042
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [71/100]
+  Train Loss: 0.1210
+  Val Loss:   0.1195
+  Macro F1:   0.9522
+  Sample F1:  0.9667
+  LR:         0.000040
+  ⏸️  耐心计数: 3/25
+============================================================
+                                                                                                                                                                                   
+Epoch [72/100]
+  Train Loss: 0.1210
+  Val Loss:   0.1199
+  Macro F1:   0.9521
+  Sample F1:  0.9664
+  LR:         0.000037
+  ⏸️  耐心计数: 4/25
+============================================================
+                                                                                                                                                                                   
+Epoch [73/100]
+  Train Loss: 0.1205
+  Val Loss:   0.1206
+  Macro F1:   0.9512
+  Sample F1:  0.9654
+  LR:         0.000035
+  ⏸️  耐心计数: 5/25
+============================================================
+                                                                                                                                                                                   
+Epoch [74/100]
+  Train Loss: 0.1208
+  Val Loss:   0.1195
+  Macro F1:   0.9515
+  Sample F1:  0.9666
+  LR:         0.000032
+  ⏸️  耐心计数: 6/25
+============================================================
+                                                                                                                                                                                   
+Epoch [75/100]
+  Train Loss: 0.1207
+  Val Loss:   0.3419
+  Macro F1:   0.6236
+  Sample F1:  0.7262
+  LR:         0.000030
+  ⏸️  耐心计数: 7/25
+============================================================
+                                                                                                                                                                                   
+Epoch [76/100]
+  Train Loss: 0.1211
+  Val Loss:   0.1195
+  Macro F1:   0.9503
+  Sample F1:  0.9660
+  LR:         0.000028
+  ⏸️  耐心计数: 8/25
+============================================================
+                                                                                                                                                                                   
+Epoch [77/100]
+  Train Loss: 0.1199
+  Val Loss:   0.1182
+  Macro F1:   0.9513
+  Sample F1:  0.9664
+  LR:         0.000026
+  ⏸️  耐心计数: 9/25
+============================================================
+                                                                                                                                                                                   
+Epoch [78/100]
+  Train Loss: 0.1201
+  Val Loss:   0.1189
+  Macro F1:   0.9505
+  Sample F1:  0.9659
+  LR:         0.000024
+  ⏸️  耐心计数: 10/25
+============================================================
+                                                                                                                                                                                   
+Epoch [79/100]
+  Train Loss: 0.1199
+  Val Loss:   0.1184
+  Macro F1:   0.9523
+  Sample F1:  0.9675
+  LR:         0.000022
+  ⏸️  耐心计数: 11/25
+============================================================
+                                                                                                                                                                                   
+Epoch [80/100]
+  Train Loss: 0.1199
+  Val Loss:   0.1202
+  Macro F1:   0.9509
+  Sample F1:  0.9662
+  LR:         0.000020
+  ⏸️  耐心计数: 12/25
+============================================================
+                                                                                                                                                                                   
+Epoch [81/100]
+  Train Loss: 0.1200
+  Val Loss:   0.1192
+  Macro F1:   0.9526
+  Sample F1:  0.9671
+  LR:         0.000018
+  ⏸️  耐心计数: 13/25
+============================================================
+                                                                                                                                                                                   
+Epoch [82/100]
+  Train Loss: 0.1194
+  Val Loss:   0.1188
+  Macro F1:   0.9509
+  Sample F1:  0.9668
+  LR:         0.000016
+  ⏸️  耐心计数: 14/25
+============================================================
+                                                                                                                                                                                   
+Epoch [83/100]
+  Train Loss: 0.1190
+  Val Loss:   0.1181
+  Macro F1:   0.9525
+  Sample F1:  0.9679
+  LR:         0.000015
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9679
+============================================================
+                                                                                                                                                                                   
+Epoch [84/100]
+  Train Loss: 0.1195
+  Val Loss:   0.1180
+  Macro F1:   0.9525
+  Sample F1:  0.9677
+  LR:         0.000013
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [85/100]
+  Train Loss: 0.1196
+  Val Loss:   0.1188
+  Macro F1:   0.9514
+  Sample F1:  0.9672
+  LR:         0.000012
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [86/100]
+  Train Loss: 0.1195
+  Val Loss:   0.1184
+  Macro F1:   0.9536
+  Sample F1:  0.9683
+  LR:         0.000010
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9683
+============================================================
+                                                                                                                                                                                   
+Epoch [87/100]
+  Train Loss: 0.1191
+  Val Loss:   0.1180
+  Macro F1:   0.9536
+  Sample F1:  0.9685
+  LR:         0.000009
+  💾 模型已保存: /mnt/workspace/BrainCT/run/weights/best_lesion.pth
+  ✅ 新的最佳模型! F1: 0.9685
+============================================================
+                                                                                                                                                                                   
+Epoch [88/100]
+  Train Loss: 0.1193
+  Val Loss:   0.1183
+  Macro F1:   0.9524
+  Sample F1:  0.9674
+  LR:         0.000008
+  ⏸️  耐心计数: 1/25
+============================================================
+                                                                                                                                                                                   
+Epoch [89/100]
+  Train Loss: 0.1190
+  Val Loss:   0.1191
+  Macro F1:   0.9518
+  Sample F1:  0.9659
+  LR:         0.000007
+  ⏸️  耐心计数: 2/25
+============================================================
+                                                                                                                                                                                   
+Epoch [90/100]
+  Train Loss: 0.1188
+  Val Loss:   0.1186
+  Macro F1:   0.9517
+  Sample F1:  0.9664
+  LR:         0.000006
+  ⏸️  耐心计数: 3/25
+============================================================
+                                                                                                                                                                                   
+Epoch [91/100]
+  Train Loss: 0.1192
+  Val Loss:   0.1186
+  Macro F1:   0.9519
+  Sample F1:  0.9675
+  LR:         0.000005
+  ⏸️  耐心计数: 4/25
+============================================================
+                                                                                                                                                                                   
+Epoch [92/100]
+  Train Loss: 0.1194
+  Val Loss:   0.1195
+  Macro F1:   0.9514
+  Sample F1:  0.9660
+  LR:         0.000004
+  ⏸️  耐心计数: 5/25
+============================================================
+                                                                                                                                                                                   
+Epoch [93/100]
+  Train Loss: 0.1192
+  Val Loss:   0.1186
+  Macro F1:   0.9527
+  Sample F1:  0.9674
+  LR:         0.000003
+  ⏸️  耐心计数: 6/25
+============================================================
+                                                                                                                                                                                   
+Epoch [94/100]
+  Train Loss: 0.1195
+  Val Loss:   0.1185
+  Macro F1:   0.9529
+  Sample F1:  0.9673
+  LR:         0.000003
+  ⏸️  耐心计数: 7/25
+============================================================
+                                                                                                                                                                                   
+Epoch [95/100]
+  Train Loss: 0.1191
+  Val Loss:   0.1178
+  Macro F1:   0.9517
+  Sample F1:  0.9676
+  LR:         0.000002
+  ⏸️  耐心计数: 8/25
+============================================================
+                                                                                                                                                                                   
+Epoch [96/100]
+  Train Loss: 0.1191
+  Val Loss:   0.1177
+  Macro F1:   0.9513
+  Sample F1:  0.9671
+  LR:         0.000002
+  ⏸️  耐心计数: 9/25
+============================================================
+                                                                                                                                                                                   
+Epoch [97/100]
+  Train Loss: 0.1190
+  Val Loss:   0.1177
+  Macro F1:   0.9526
+  Sample F1:  0.9678
+  LR:         0.000001
+  ⏸️  耐心计数: 10/25
+============================================================
+Epoch [98/100]
+  Train Loss: 0.1190
+  Val Loss:   0.1175
+  Macro F1:   0.9529
+  Sample F1:  0.9675
+  LR:         0.000001
+  ⏸️  耐心计数: 11/25
+============================================================
+                                                                                                                                                                                   
+Epoch [99/100]
+  Train Loss: 0.1187
+  Val Loss:   0.1182
+  Macro F1:   0.9508
+  Sample F1:  0.9661
+  LR:         0.000001
+  ⏸️  耐心计数: 12/25
+============================================================
+                                                                                                                                                                                   
+Epoch [100/100]
+  Train Loss: 0.1191
+  Val Loss:   0.5523
+  Macro F1:   0.4512
+  Sample F1:  0.5912
+  LR:         0.000001
+  ⏸️  耐心计数: 13/25
+============================================================
+
+🎉 训练完成!
+  总耗时: 96.40 分钟
+  最佳 Epoch: 87
+  最佳 F1: 0.9685
+
+🎉 全部训练完成！
+模型保存于: /mnt/workspace/BrainCT/run/weights/best_lesion.pth

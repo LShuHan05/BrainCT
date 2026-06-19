@@ -1,0 +1,46 @@
+# ==================== 数据目录（太大，不提交） ====================
+Datasets/CT/
+Datasets/MASK/
+datasets_filtered/
+# 注意：如果还有其它原始数据目录，也可添加，例如：
+# datasets/
+# md/                         # 标注文件可能含敏感信息，建议不提交（但若需要可移除）
+
+# ==================== 临时日志与输出 ====================
+*.log
+api.log
+predict/api.log
+logs/
+mpr_validation*.png
+*.pyc
+__pycache__/
+.pytest_cache/
+*.egg-info/
+
+# ==================== 临时测试脚本（已确认可删除） ====================
+test_mpr.py
+test_dataset_loading.py
+test.py
+start_api.bat
+Split3D2Dcm.py
+predict/CQ500-CT-5.zip
+
+# ==================== 编辑器/系统文件 ====================
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ==================== 虚拟环境（如果有） ====================
+.venv/
+venv/
+env/
+ENV/
+*.pyenv/
+
+# ==================== 其他临时目录 ====================
+run/viz/                           # 训练可视化图，可忽略（但保留权重）
+# run/weights/*.pth                # 权重文件不忽略，因为你想提交
+# Conf/Config.py                   # 不忽略，因为你想提交*.pth

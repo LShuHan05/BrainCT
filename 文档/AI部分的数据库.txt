@@ -1,0 +1,398 @@
+16. AI影像分析结果表：ai_image_analysis
+-- 存储 BrainCT 等 AI 模型的识别结果
+CREATE TABLE ai_image_analysis (
+    id                    INT PRIMARY KEY AUTO_INCREMENT,
+    register_id           INT NOT NULL,              -- 关联挂号记录
+    patient_id            VARCHAR(64) NOT NULL,       -- 病历号
+
+    -- 影像信息
+    image_type            VARCHAR(32) NOT NULL,       -- 影像类型: CT/MRI/X-ray
+    image_path            VARCHAR(512),               -- 原始影像路径
+    image_series_uid      VARCHAR(128),               -- DICOM SeriesInstanceUID
+
+    -- AI模型信息
+    model_name            VARCHAR(64) NOT NULL,       -- 模型名称: BrainCT-v1
+    model_version         VARCHAR(32),                -- 模型版本
+    analysis_type         VARCHAR(32) NOT NULL,       -- 分析类型: lesion/artifact/quality
+
+    -- 识别结果（结构化数据）
+    findings_json         JSON,                       -- AI识别的详细结果
+    /*
+    示例 JSON 结构:
+    {
+      "lesions": [
+        {
+          "type": "ICH",
+          "probability": 0.95,
+          "location": "right_hemisphere",
+          "size_mm": 15.3,
+          "coordinates": {"x": 120, "y": 85, "z": 45}
+        }
+      ],
+      "emergency_level": "B2",
+      "confidence_score": 0.92
+    }
+    */
+
+    -- 紧急程度分级
+    emergency_level       VARCHAR(16),                -- B1-轻症/B2-中重度
+    urgency_score         DECIMAL(3,2),               -- 紧急度评分 0-1
+
+    -- 置信度指标
+    overall_confidence    DECIMAL(3,2),               -- 整体置信度 0-1
+    precision_score       DECIMAL(3,2),               -- 精确率
+    recall_score          DECIMAL(3,2),               -- 召回率
+
+    -- 处理状态
+    status                VARCHAR(32) DEFAULT 'pending', -- pending/completed/failed/reviewed
+    processing_time_ms    INT,                        -- 处理耗时(毫秒)
+
+    -- 医生审核
+    reviewed_by           INT,                        -- 审核医生ID
+    review_status         VARCHAR(32) DEFAULT 'unreviewed', -- unreviewed/confirmed/corrected
+    review_comments       TEXT,                       -- 审核意见
+    reviewed_at           DATETIME,                   -- 审核时间
+
+    -- 时间戳
+    created_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at            DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (register_id) REFERENCES register(id),
+    FOREIGN KEY (reviewed_by) REFERENCES employee(id),
+    INDEX idx_patient (patient_id),
+    INDEX idx_status (status),
+    INDEX idx_emergency (emergency_level)
+);
+
+
+17. AI诊断建议表：ai_diagnosis_suggestion
+-- 存储 AI 生成的诊断建议和处理意见
+CREATE TABLE ai_diagnosis_suggestion (
+    id                    INT PRIMARY KEY AUTO_INCREMENT,
+    register_id           INT NOT NULL,               -- 关联挂号记录
+    analysis_id           INT,                        -- 关联影像分析结果
+
+    -- AI 诊断内容
+    primary_diagnosis     VARCHAR(512),               -- 主要诊断
+    differential_diagnosis JSON,                      -- 鉴别诊断列表
+    /*
+    示例:
+    [
+      {"disease": "脑实质出血", "probability": 0.85},
+      {"disease": "脑梗死", "probability": 0.12}
+    ]
+    */
+
+    suggested_tests       JSON,                       -- 建议的检查项目
+    suggested_treatments  JSON,                       -- 建议的治疗方案
+    medication_suggestions JSON,                      -- 用药建议
+
+    -- 风险预警
+    risk_factors          JSON,                       -- 风险因素
+    contraindications     TEXT,                       -- 禁忌症提醒
+
+    -- 生成信息
+    llm_model             VARCHAR(64),                -- 使用的大模型: deepseek/gpt
+    generation_prompt     TEXT,                       -- 使用的提示词
+    raw_llm_response      LONGTEXT,                   -- 大模型原始响应
+
+    -- 医生采纳情况
+    adoption_status       VARCHAR(32) DEFAULT 'pending', -- pending/adopted/partially_adopted/rejected
+    adopted_by            INT,                        -- 采纳医生ID
+    adoption_notes        TEXT,                       -- 采纳说明
+    adopted_at            DATETIME,                   -- 采纳时间
+
+    created_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (register_id) REFERENCES register(id),
+    FOREIGN KEY (analysis_id) REFERENCES ai_image_analysis(id),
+    FOREIGN KEY (adopted_by) REFERENCES employee(id)
+);
+
+
+18. AI医患对话记录表：ai_conversation
+-- 存储患者与 AI 助手的对话历史
+CREATE TABLE ai_conversation (
+    id                    BIGINT PRIMARY KEY AUTO_INCREMENT,
+    conversation_id       VARCHAR(64) NOT NULL,       -- 会话ID（UUID）
+
+    -- 参与者信息
+    participant_type      VARCHAR(16) NOT NULL,       -- patient/doctor/admin
+    participant_id        VARCHAR(64) NOT NULL,       -- 用户ID（病历号或医生ID）
+    register_id           INT,                        -- 关联挂号记录（可选）
+
+    -- 对话内容
+    role                  VARCHAR(16) NOT NULL,       -- user/assistant/system
+    message_type          VARCHAR(32) DEFAULT 'text', -- text/image/result_card
+
+    content               LONGTEXT NOT NULL,          -- 消息内容
+    content_summary       VARCHAR(512),               -- 内容摘要（用于快速展示）
+
+    -- 多媒体附件
+    attachments_json      JSON,                       -- 附件信息
+    /*
+    示例:
+    {
+      "images": ["path/to/image1.jpg"],
+      "reports": ["path/to/report.pdf"]
+    }
+    */
+
+    -- AI 元数据
+    llm_model             VARCHAR(64),                -- 使用的模型
+    tokens_used           INT,                        -- 消耗的 token 数
+    response_time_ms      INT,                        -- 响应时间
+    temperature           DECIMAL(3,2),               -- 生成温度参数
+
+    -- 上下文信息
+    context_snapshot      JSON,                       -- 对话上下文快照
+    intent_classification VARCHAR(64),                -- 意图分类: inquiry/symptom_report/follow_up
+
+    -- 质量评估
+    quality_score         DECIMAL(3,2),               -- 回答质量评分
+    user_feedback         VARCHAR(32),                -- 用户反馈: helpful/not_helpful
+    flagged               BOOLEAN DEFAULT FALSE,      -- 是否标记为异常
+
+    -- 时间戳
+    created_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_conversation (conversation_id),
+    INDEX idx_participant (participant_type, participant_id),
+    INDEX idx_register (register_id),
+    INDEX idx_created (created_at)
+);
+
+
+19. AI 会话管理表：ai_conversation_session
+-- 管理对话会话的元信息
+CREATE TABLE ai_conversation_session (
+    conversation_id       VARCHAR(64) PRIMARY KEY,    -- 会话ID
+
+    -- 会话基本信息
+    title                 VARCHAR(256),               -- 会话标题（自动生成）
+    participant_type      VARCHAR(16) NOT NULL,       -- patient/doctor
+    participant_id        VARCHAR(64) NOT NULL,       -- 用户ID
+
+    -- 关联业务
+    register_id           INT,                        -- 关联挂号记录
+    disease_id            INT,                        -- 关联疾病
+
+    -- 会话状态
+    status                VARCHAR(32) DEFAULT 'active', -- active/closed/archived
+    message_count         INT DEFAULT 0,              -- 消息总数
+
+    -- 最后活跃时间
+    last_message_at       DATETIME,                   -- 最后一条消息时间
+    closed_at             DATETIME,                   -- 会话关闭时间
+    closed_reason         VARCHAR(64),                -- 关闭原因: user_timeout/resolved/manual
+
+    -- 统计信息
+    total_tokens          INT DEFAULT 0,              -- 总 token 消耗
+    duration_seconds      INT,                        -- 会话持续时间
+
+    created_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at            DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (register_id) REFERENCES register(id),
+    FOREIGN KEY (disease_id) REFERENCES disease(id),
+    INDEX idx_participant (participant_type, participant_id),
+    INDEX idx_status (status)
+);
+
+
+20. AI 模型调用日志表：ai_model_call_lo
+-- 记录所有 AI 模型的调用情况（用于计费和监控）
+CREATE TABLE ai_model_call_log (
+    id                    BIGINT PRIMARY KEY AUTO_INCREMENT,
+
+    -- 调用信息
+    call_type             VARCHAR(32) NOT NULL,       -- image_analysis/diagnosis/chat
+    model_name            VARCHAR(64) NOT NULL,       -- BrainCT/deepseek-chat/gpt-4
+    model_provider        VARCHAR(32),                -- local/deepseek/openai
+
+    -- 关联业务
+    register_id           INT,                        -- 关联挂号记录
+    conversation_id       VARCHAR(64),                -- 关联会话
+    user_id               VARCHAR(64),                -- 调用者ID
+
+    -- 请求信息
+    request_size_bytes    INT,                        -- 请求大小
+    input_tokens          INT,                        -- 输入 token 数
+    output_tokens         INT,                        -- 输出 token 数
+
+    -- 响应信息
+    response_status       VARCHAR(32),                -- success/failed/timeout
+    response_time_ms      INT,                        -- 响应时间
+    error_message         TEXT,                       -- 错误信息
+
+    -- 计费信息
+    cost_cents            INT DEFAULT 0,              -- 费用（分）
+    currency              VARCHAR(8) DEFAULT 'CNY',   -- 货币类型
+
+    -- 限流控制
+    rate_limit_key        VARCHAR(128),               -- 限流键
+    rate_limit_remaining  INT,                        -- 剩余配额
+
+    created_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_user (user_id),
+    INDEX idx_register (register_id),
+    INDEX idx_created (created_at),
+    INDEX idx_model (model_name)
+);
+
+
+21. AI 知识库表：ai_knowledge_base
+-- 存储医学知识库，用于 RAG 增强大模型回答
+CREATE TABLE ai_knowledge_base (
+    id                    INT PRIMARY KEY AUTO_INCREMENT,
+
+    -- 知识分类
+    category              VARCHAR(64) NOT NULL,       -- disease/drug/procedure/guideline
+    subcategory           VARCHAR(64),                -- 子分类
+
+    -- 知识内容
+    title                 VARCHAR(256) NOT NULL,      -- 标题
+    content               LONGTEXT NOT NULL,          -- 详细内容
+    summary               VARCHAR(1024),              -- 摘要
+
+    -- 向量化信息（用于语义搜索）
+    embedding_vector      VECTOR(1536),               -- 向量嵌入（MySQL 8.0+）
+    embedding_model       VARCHAR(64),                -- 使用的嵌入模型
+
+    -- 来源信息
+    source                VARCHAR(256),               -- 来源文献/指南
+    evidence_level        VARCHAR(16),                -- 证据等级: A/B/C
+    publication_date      DATE,                       -- 发布日期
+
+    -- 适用性
+    applicable_departments JSON,                      -- 适用科室
+    tags                  JSON,                       -- 标签
+
+    -- 使用统计
+    view_count            INT DEFAULT 0,              -- 查看次数
+    citation_count        INT DEFAULT 0,              -- 引用次数
+
+    -- 状态
+    status                VARCHAR(32) DEFAULT 'active', -- active/inactive/under_review
+    verified_by           INT,                        -- 验证专家ID
+    verified_at           DATETIME,                   -- 验证时间
+
+    created_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at            DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (verified_by) REFERENCES employee(id),
+    INDEX idx_category (category),
+    INDEX idx_tags ((CAST(tags AS CHAR(512)))),
+    FULLTEXT INDEX ft_content (title, content)
+);
+
+
+22. AI 报告模板表：ai_report_template
+-- 存储 AI 生成报告的模板
+CREATE TABLE ai_report_template (
+    id                    INT PRIMARY KEY AUTO_INCREMENT,
+
+    -- 模板信息
+    template_name         VARCHAR(128) NOT NULL,      -- 模板名称
+    template_type         VARCHAR(32) NOT NULL,       -- imaging/lab/examination
+    department            VARCHAR(64),                -- 适用科室
+
+    -- 模板内容
+    template_structure    JSON NOT NULL,              -- 模板结构
+    /*
+    示例:
+    {
+      "sections": [
+        {"name": "检查方法", "required": true},
+        {"name": "影像表现", "required": true},
+        {"name": "诊断意见", "required": true}
+      ]
+    }
+    */
+
+    default_prompt        LONGTEXT,                   -- 默认提示词
+    sample_output         LONGTEXT,                   -- 示例输出
+
+    -- 使用配置
+    llm_model             VARCHAR(64),                -- 推荐使用的模型
+    temperature           DECIMAL(3,2) DEFAULT 0.7,   -- 生成温度
+    max_tokens            INT DEFAULT 2000,           -- 最大 token 数
+
+    -- 状态
+    is_default            BOOLEAN DEFAULT FALSE,      -- 是否为默认模板
+    status                VARCHAR(32) DEFAULT 'active',
+    created_by            INT,                        -- 创建者ID
+
+    created_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at            DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (created_by) REFERENCES employee(id),
+    INDEX idx_type (template_type)
+);
+
+
+23. AI 性能评估表：ai_performance_metrics
+-- 记录 AI 模型的性能指标（用于持续优化）
+CREATE TABLE ai_performance_metrics (
+    id                    INT PRIMARY KEY AUTO_INCREMENT,
+
+    -- 评估对象
+    model_name            VARCHAR(64) NOT NULL,
+    model_version         VARCHAR(32) NOT NULL,
+    evaluation_type       VARCHAR(32),                -- accuracy/diagnostic_quality/user_satisfaction
+
+    -- 评估指标
+    metric_name           VARCHAR(64) NOT NULL,       -- dice/iou/accuracy/precision/recall/f1
+    metric_value          DECIMAL(5,4) NOT NULL,      -- 指标值
+
+    -- 评估数据集
+    dataset_name          VARCHAR(64),                -- 数据集名称
+    sample_size           INT,                        -- 样本数量
+
+    -- 评估详情
+    confusion_matrix      JSON,                       -- 混淆矩阵
+    per_class_metrics     JSON,                       -- 各类别指标
+
+    -- 评估信息
+    evaluated_by          INT,                        -- 评估者ID
+    evaluation_method     VARCHAR(64),                -- 评估方法
+    evaluation_date       DATE NOT NULL,              -- 评估日期
+
+    notes                 TEXT,                       -- 备注
+
+    created_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (evaluated_by) REFERENCES employee(id),
+    INDEX idx_model (model_name, model_version),
+    INDEX idx_date (evaluation_date)
+);
+
+
+
+🔄 需要扩展现有表
+扩展 medical_record 表
+ALTER TABLE medical_record ADD COLUMN (
+    ai_assisted           BOOLEAN DEFAULT FALSE,      -- 是否AI辅助诊断
+    ai_analysis_id        INT,                        -- 关联AI分析结果
+    ai_diagnosis_id       INT,                        -- 关联AI诊断建议
+
+    FOREIGN KEY (ai_analysis_id) REFERENCES ai_image_analysis(id),
+    FOREIGN KEY (ai_diagnosis_id) REFERENCES ai_diagnosis_suggestion(id)
+);
+
+
+扩展 check_request 表
+ALTER TABLE check_request ADD COLUMN (
+    ai_pre_analysis       JSON,                       -- AI预分析结果
+    ai_priority_score     DECIMAL(3,2),               -- AI优先级评分
+    auto_scheduled        BOOLEAN DEFAULT FALSE       -- 是否自动排程
+);
+
+扩展 disease 表
+ALTER TABLE disease ADD COLUMN (
+    ai_icd_code           VARCHAR(32),                -- AI推荐的ICD编码
+    knowledge_base_ids    JSON,                       -- 关联的知识库条目
+    typical_cases_json    JSON                        -- 典型病例参考
+);
+

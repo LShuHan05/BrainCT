@@ -1,0 +1,1 @@
+epoch,train_loss,val_loss,macro_f1,sample_f1,lr,best_sample_f1
