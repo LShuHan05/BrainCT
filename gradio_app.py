@@ -7,36 +7,50 @@ import requests
 import numpy as np
 import matplotlib.pyplot as plt
 import pydicom
-import io
 import zipfile
 from pathlib import Path
 import tempfile
 import plotly.graph_objects as go
-from PIL import Image
 
 # FastAPI 服务地址
 API_URL = "http://127.0.0.1:8000"
+TEMP_DIR = tempfile.gettempdir()
 
 # ==================== 辅助函数 ====================
-def load_dicom_from_zip(zip_bytes):
-    """从ZIP字节流中提取所有DICOM，返回体积数组（用于显示）"""
+def load_dicom_from_zip(zip_path):
+    """
+    从ZIP文件提取DICOM，并按空间位置排序后返回3D体积
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
-        zip_path = os.path.join(tmpdir, "volume.zip")
-        with open(zip_path, "wb") as f:
-            f.write(zip_bytes)
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(tmpdir)
-        dcm_files = sorted(Path(tmpdir).glob("*.dcm"))
+        dcm_files = list(Path(tmpdir).glob("*.dcm"))
         if not dcm_files:
             return None
+
+        # 读取所有切片并记录位置信息
         slices = []
         for dcm_path in dcm_files:
             ds = pydicom.dcmread(str(dcm_path))
             arr = ds.pixel_array.astype(np.float32)
             if hasattr(ds, 'RescaleSlope') and hasattr(ds, 'RescaleIntercept'):
                 arr = arr * ds.RescaleSlope + ds.RescaleIntercept
-            slices.append(arr)
-        volume = np.stack(slices, axis=0)
+
+            # 获取空间位置（优先使用 ImagePositionPatient，否则用 InstanceNumber）
+            if hasattr(ds, 'ImagePositionPatient'):
+                # ImagePositionPatient 是 (x,y,z) 列表，通常 z 是第三维
+                pos = float(ds.ImagePositionPatient[2])
+            elif hasattr(ds, 'InstanceNumber'):
+                pos = int(ds.InstanceNumber)
+            else:
+                pos = dcm_files.index(dcm_path)  # fallback
+
+            slices.append((pos, arr))
+
+        # 按位置排序
+        slices.sort(key=lambda x: x[0])
+        volume = np.stack([s[1] for s in slices], axis=0)  # (D, H, W)
+
         # 归一化用于显示
         volume = np.clip(volume, -100, 100)
         vmin, vmax = volume.min(), volume.max()
@@ -45,7 +59,7 @@ def load_dicom_from_zip(zip_bytes):
         return volume
 
 def extract_center_slices(volume):
-    """提取三视图中心切片用于显示"""
+    """提取三视图中心切片，并旋转使方向对齐"""
     d, h, w = volume.shape
     axial = volume[d//2, :, :]
     coronal = volume[:, h//2, :]
@@ -70,120 +84,104 @@ def create_probability_bar(predictions):
     )
     return fig
 
-def display_report_text(report):
-    """格式化报告显示"""
-    return report
-
 # ==================== 核心处理函数 ====================
 def process_zip_file(file):
-    """
-    处理上传的ZIP文件：显示三视图 + 调用API预测 + 显示报告
-    """
     if file is None:
-        return None, None, None, None, None, None
+        return None, None, "未上传文件", None
 
-    # 读取ZIP字节
-    zip_bytes = file
+    zip_path = file.name if hasattr(file, 'name') else file
 
     # 1. 显示三视图
-    volume = load_dicom_from_zip(zip_bytes)
+    volume = load_dicom_from_zip(zip_path)
     if volume is None:
-        return "无法读取DICOM文件", None, None, None, None
+        return None, None, "无法读取DICOM文件", None
     axial, coronal, sagittal = extract_center_slices(volume)
 
-    # 创建三视图图像（matplotlib）
     fig, axes = plt.subplots(1, 3, figsize=(9, 3))
-    axes[0].imshow(axial, cmap='gray')
+    axes[0].imshow(axial, cmap='gray', interpolation='nearest')
     axes[0].set_title('轴位 (Axial)')
     axes[0].axis('off')
-    axes[1].imshow(coronal, cmap='gray')
+    axes[1].imshow(coronal, cmap='gray', interpolation='nearest')
     axes[1].set_title('冠状 (Coronal)')
     axes[1].axis('off')
-    axes[2].imshow(sagittal, cmap='gray')
+    axes[2].imshow(sagittal, cmap='gray', interpolation='nearest')
     axes[2].set_title('矢状 (Sagittal)')
     axes[2].axis('off')
     plt.tight_layout()
-    # 保存为临时图片
-    img_path = "/tmp/mpr_views.png"
+    img_path = os.path.join(TEMP_DIR, "mpr_views.png")
     plt.savefig(img_path, dpi=100, bbox_inches='tight')
     plt.close()
 
-    # 2. 调用API进行预测（上传ZIP）
+    # 2. 调用API进行预测
     url = f"{API_URL}/predict/volume"
-    files = {'file': ('volume.zip', zip_bytes, 'application/zip')}
-    try:
-        response = requests.post(url, files=files)
-        if response.status_code == 200:
-            result = response.json()
-            predictions = result['predictions']
-            # 生成概率条形图
-            prob_fig = create_probability_bar(predictions)
-            # 生成报告（调用 /predict/report，但这里需要先有预测结果）
-            # 简便起见，我们单独再调用 report 端点（使用第一个DICOM文件）
-            # 但为了演示，此处我们可以直接显示预测结果
-            report_text = "（报告生成需要调用 /predict/report 端点，由于需要单个DICOM文件，此处暂略）"
-            # 也可以从 predictions 生成简单的文本报告
-            positive = [p['label'] for p in predictions if p['positive']]
-            if positive:
-                report_text = f"检出阳性病灶：{', '.join(positive)}\n\n"
-                report_text += "详细概率如下：\n"
-                for p in predictions:
-                    report_text += f"{p['label']}: {p['probability']:.3f}\n"
+    with open(zip_path, 'rb') as f:
+        files = {'file': ('volume.zip', f, 'application/zip')}
+        try:
+            response = requests.post(url, files=files, timeout=30)
+            if response.status_code == 200:
+                result = response.json()
+                predictions = result['predictions']
+                prob_fig = create_probability_bar(predictions)
+                positive = [p['label'] for p in predictions if p['positive']]
+                if positive:
+                    report_text = f"检出阳性病灶：{', '.join(positive)}\n\n"
+                    report_text += "详细概率如下：\n"
+                    for p in predictions:
+                        report_text += f"{p['label']}: {p['probability']:.3f}\n"
+                else:
+                    report_text = "未检出明显病灶。"
+                # 返回4个值（与输出组件匹配）
+                return img_path, prob_fig, report_text, f"耗时 {result['elapsed_ms']:.0f} ms"
             else:
-                report_text = "未检出明显病灶。"
-            return img_path, prob_fig, report_text, f"耗时 {result['elapsed_ms']:.0f} ms", None
-        else:
-            return None, None, f"API调用失败: {response.text}", None, None
-    except Exception as e:
-        return None, None, f"错误: {str(e)}", None, None
+                return None, None, f"API调用失败: {response.text}", None
+        except Exception as e:
+            return None, None, f"错误: {str(e)}", None
 
 def process_dicom_file(file):
-    """
-    处理单个DICOM文件：显示图像 + 调用 /predict/dicom + 报告
-    """
     if file is None:
-        return None, None, None, None
+        return None, None, "未上传文件", None
 
-    dcm_bytes = file
-    # 显示DICOM图像（使用pydicom读取）
-    ds = pydicom.dcmread(io.BytesIO(dcm_bytes))
+    dcm_path = file.name if hasattr(file, 'name') else file
+
+    # 显示DICOM图像
+    ds = pydicom.dcmread(dcm_path)
     img = ds.pixel_array.astype(np.float32)
-    # 归一化显示
     img = np.clip(img, -100, 100)
     vmin, vmax = img.min(), img.max()
     if vmax - vmin > 0:
         img = (img - vmin) / (vmax - vmin)
-    # 保存为临时图像
-    img_path = "/tmp/dicom_slice.png"
+    img_path = os.path.join(TEMP_DIR, "dicom_slice.png")
     plt.imsave(img_path, img, cmap='gray')
 
     # 调用 /predict/dicom
     url = f"{API_URL}/predict/dicom"
-    files = {'file': ('slice.dcm', dcm_bytes, 'application/octet-stream')}
-    try:
-        response = requests.post(url, files=files)
-        if response.status_code == 200:
-            result = response.json()
-            predictions = result['predictions']
-            prob_fig = create_probability_bar(predictions)
-            # 生成报告（调用 /predict/report）
-            report_url = f"{API_URL}/predict/report"
-            report_files = {'file': ('slice.dcm', dcm_bytes, 'application/octet-stream')}
-            data = {'case_id': 'DEMO', 'patient_name': 'Demo', 'patient_age': '40'}
-            report_resp = requests.post(report_url, files=report_files, data=data)
-            report_text = ""
-            if report_resp.status_code == 200:
-                report_text = report_resp.json().get('report', '')
+    with open(dcm_path, 'rb') as f:
+        files = {'file': ('slice.dcm', f, 'application/octet-stream')}
+        try:
+            response = requests.post(url, files=files, timeout=30)
+            if response.status_code == 200:
+                result = response.json()
+                predictions = result['predictions']
+                prob_fig = create_probability_bar(predictions)
+                # 生成报告
+                report_url = f"{API_URL}/predict/report"
+                with open(dcm_path, 'rb') as f2:
+                    report_files = {'file': ('slice.dcm', f2, 'application/octet-stream')}
+                    data = {'case_id': 'DEMO', 'patient_name': 'Demo', 'patient_age': '40'}
+                    report_resp = requests.post(report_url, files=report_files, data=data, timeout=30)
+                    report_text = ""
+                    if report_resp.status_code == 200:
+                        report_text = report_resp.json().get('report', '')
+                    else:
+                        report_text = f"报告生成失败: {report_resp.text}"
+                return img_path, prob_fig, report_text, f"耗时 {result['elapsed_ms']:.0f} ms"
             else:
-                report_text = "报告生成失败"
-            return img_path, prob_fig, report_text, f"耗时 {result['elapsed_ms']:.0f} ms"
-        else:
-            return None, None, f"API调用失败: {response.text}", None
-    except Exception as e:
-        return None, None, f"错误: {str(e)}", None
+                return None, None, f"API调用失败: {response.text}", None
+        except Exception as e:
+            return None, None, f"错误: {str(e)}", None
 
 # ==================== Gradio 界面 ====================
-with gr.Blocks(title="BrainCT 脑部CT分析系统", theme=gr.themes.Soft()) as demo:
+with gr.Blocks(title="BrainCT 脑部CT分析系统") as demo:
     gr.Markdown("# 🧠 BrainCT 脑部CT病灶识别与报告系统")
     gr.Markdown("上传DICOM序列（ZIP）或单个DICOM文件，系统将进行多标签分类并生成诊断报告。")
 
@@ -222,6 +220,5 @@ with gr.Blocks(title="BrainCT 脑部CT分析系统", theme=gr.themes.Soft()) as 
     gr.Markdown("---")
     gr.Markdown("**说明**：该系统基于深度学习模型，检测9类脑部病灶并生成结构化报告。仅供研究参考，不作为临床诊断依据。")
 
-# 启动服务
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860, share=True)
+    demo.launch(server_name="0.0.0.0", server_port=7860, share=False)
