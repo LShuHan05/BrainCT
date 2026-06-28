@@ -1,50 +1,131 @@
 # ====================== 医学影像处理 ======================
-pydicom>=2.3.0
-pylibjpeg>=2.0.0
-pylibjpeg-libjpeg>=2.1.0
-pylibjpeg-openjpeg>=2.0.0
-SimpleITK>=2.2.0
-nibabel>=5.0.0
+pydicom==3.0.2
+pylibjpeg==2.1.0
+pylibjpeg-libjpeg==2.2.0
+pylibjpeg-openjpeg==2.3.0
+SimpleITK==2.5.5
+nibabel==5.4.2
 
 # ====================== 数据处理（固定 NumPy 版本，避免 2.x 冲突） ======================
 numpy==1.26.4
-pandas>=2.0.0
-scipy>=1.10.0
-Pillow>=9.5.0
+pandas==2.3.3
+scipy==1.15.3
+Pillow==12.2.0
 
 # ====================== Web 框架 ======================
-fastapi>=0.100.0
-uvicorn>=0.23.0
-python-multipart>=0.0.6       # 文件上传支持
+fastapi==0.138.0
+uvicorn==0.49.0
+python-multipart==0.0.32
+starlette==1.3.1
+click==8.4.1
+h11==0.16.0
+httptools>=0.6.0           # 未出现在 freeze 但 uvicorn 通常依赖，保留显式
+watchfiles>=0.21.0
 
 # ====================== 数据库（PostgreSQL） ======================
-SQLAlchemy>=2.0.0
-psycopg2-binary>=2.9.0
+SQLAlchemy==2.0.51
+psycopg2-binary==2.9.12
+greenlet==3.5.2            # SQLAlchemy 依赖
 
 # ====================== HTTP 客户端 ======================
-requests>=2.31.0
-httpx>=0.25.0                 # 异步 HTTP 客户端
+requests==2.34.2
+httpx==0.28.1
+httpcore==1.0.9
+certifi==2026.6.17
+charset-normalizer==3.4.7
+idna==3.18
+urllib3==2.7.0
 
 # ====================== 可视化、UI 与进度条 ======================
-matplotlib>=3.7.0
-plotly>=5.0.0                 # 交互式可视化（用于 Gradio 绘图）
-tqdm>=4.65.0
+matplotlib==3.10.9
+plotly==6.8.0
+tqdm==4.68.3
+contourpy==1.3.2
+cycler==0.12.1
+fonttools==4.63.0
+kiwisolver==1.5.0
+pyparsing==3.3.2
+python-dateutil==2.9.0.post0
+pytz==2026.2
+tzdata==2026.2
+six==1.17.0
 
-# ====================== Web UI 前端（修复缺失） ======================
-gradio>=4.0.0                 # 补充缺失的 Gradio UI 框架
+# ====================== Web UI 前端 ======================
+gradio==6.19.0
+gradio_client==2.5.0
+groovy==0.1.2
+hf-gradio==0.4.1
+hf-xet==1.5.1
+orjson==3.11.9
+pydub==0.25.1
+semantic-version==2.10.0
+tomlkit==0.14.0
+typer==0.25.1
+shellingham==1.5.4
+rich==15.0.0
+markdown-it-py==4.2.0
+mdurl==0.1.2
+Pygments==2.20.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
 
 # ====================== 推理与深度学习（CUDA 11.8 版本） ======================
-# 注意：PyTorch 2.3.1 系列，CUDA 11.8 版本
-# 安装命令：pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cu118
-#torch==2.3.1+cu118
-#torchvision==0.18.1+cu118
-#torchaudio==2.3.1+cu118
+torch==2.3.1+cu118
+torchvision==0.18.1+cu118
+torchaudio==2.3.1+cu118
+# 以下为 PyTorch CUDA 相关依赖（自动安装，为完整性列出）
+nvidia-cublas-cu11==11.11.3.6
+nvidia-cuda-cupti-cu11==11.8.87
+nvidia-cuda-nvrtc-cu11==11.8.89
+nvidia-cuda-runtime-cu11==11.8.89
+nvidia-cudnn-cu11==8.7.0.84
+nvidia-cufft-cu11==10.9.0.58
+nvidia-curand-cu11==10.3.0.86
+nvidia-cusolver-cu11==11.4.1.48
+nvidia-cusparse-cu11==11.7.5.86
+nvidia-nccl-cu11==2.20.5
+nvidia-nvtx-cu11==11.8.86
+triton==2.3.1
+sympy==1.14.0
+mpmath==1.3.0
+networkx==3.4.2
+filelock==3.29.4
+fsspec==2026.6.0
 
 # ====================== 配置与工具 ======================
-pydantic>=2.0.0
-python-dotenv>=1.0.0
-tenacity>=8.2.0               # 重试机制
-loguru>=0.7.0                 # 结构化日志
+pydantic==2.13.4
+pydantic_core==2.46.4
+annotated-types==0.7.0
+typing_extensions==4.15.0
+typing-inspection==0.4.2
+python-dotenv==1.2.2
+tenacity==9.1.4
+loguru==0.7.3
+packaging==26.2
+importlib_resources==7.1.0
+annotated-doc==0.0.4
+exceptiongroup==1.3.1
 
 # ====================== 图像处理 ======================
-opencv-python-headless>=4.8.0
+opencv-python-headless==4.11.0.86
+
+# ====================== 机器学习相关 ======================
+scikit-learn==1.7.2
+joblib==1.5.3
+threadpoolctl==3.6.0
+
+# ====================== 其他工具 ======================
+anyio==4.14.0
+sniffio>=1.3.0             # anyio 依赖，未显式列出但通常存在
+brotli==1.2.0
+PyYAML==6.0.3
+huggingface_hub==1.20.1    # gradio 依赖
+safehttpx==0.1.7
+iterative-stratification==0.1.9  # 训练脚本中使用
+narwhals==2.22.1
+
+# ====================== 异步支持 ======================
+# uvicorn 依赖的额外包（如果使用标准安装会自动安装）
+# 以下为显式声明以确保完整
+watchfiles>=0.21.0
+websockets>=12.0
